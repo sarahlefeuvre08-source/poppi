@@ -6,6 +6,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ChatMovieRecommendation } from "@/components/chat/chat-movie-recommendation";
 import { usePoppiConversation } from "@/components/providers/poppi-conversation-provider";
 import { getMovieById } from "@/data/movies";
+import { useI18n } from "@/i18n/provider";
+import { getQuickReplyLabel } from "@/lib/mock-poppi";
 
 export function PoppiChat() {
   const {
@@ -20,6 +22,7 @@ export function PoppiChat() {
   const conversationRef = useRef<HTMLDivElement>(null);
   const lastMessageIdRef = useRef(messages.at(-1)?.id);
   const [showScrollToLatest, setShowScrollToLatest] = useState(false);
+  const { locale, t } = useI18n();
 
   const updateScrollToLatestVisibility = useCallback(() => {
     const conversation = conversationRef.current;
@@ -83,13 +86,13 @@ export function PoppiChat() {
         <h1 className="text-[1.7rem] leading-none font-bold tracking-[-0.04em]">
           Poppi
         </h1>
-        <p className="mt-1 text-sm text-text-secondary">Your movie buddy</p>
+        <p className="mt-1 text-sm text-text-secondary">{t("chat.tagline")}</p>
       </header>
 
       <div
         ref={conversationRef}
         aria-live="polite"
-        aria-label="Conversation with Poppi"
+        aria-label={t("chat.conversationAria")}
         onScroll={updateScrollToLatestVisibility}
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-3 [overflow-anchor:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
@@ -111,7 +114,7 @@ export function PoppiChat() {
                 <div className="relative mb-1 h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#fbf7ef]">
                   <Image
                     src="/assets/poppi-avatar.png"
-                    alt="Poppi"
+                    alt={t("common.poppiAlt")}
                     fill
                     sizes="40px"
                     className="object-contain"
@@ -119,7 +122,7 @@ export function PoppiChat() {
                 </div>
                 <div className="min-w-0 max-w-[calc(100%-3.25rem)]">
                   <div className="whitespace-pre-line rounded-[1.25rem] rounded-bl-md border border-white/10 bg-[#242424]/95 px-4 py-3 text-sm leading-5 shadow-lg backdrop-blur-md">
-                    {message.text}
+                    {message.id === "welcome" ? t("chat.welcome") : message.text}
                   </div>
                   {recommendation && (
                     <ChatMovieRecommendation movie={recommendation} />
@@ -131,16 +134,19 @@ export function PoppiChat() {
 
           {quickReplies.length > 0 && (
             <div className="mx-auto grid w-full max-w-sm grid-cols-2 gap-2">
-              {quickReplies.map((reply) => (
+              {quickReplies.map((reply) => {
+                const label = getQuickReplyLabel(locale, reply);
+                return (
                 <button
                   key={reply.value}
                   type="button"
-                  onClick={() => sendMessage(reply.value, reply.label)}
+                  onClick={() => sendMessage(reply.value, label)}
                   className="min-h-11 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-center text-xs font-medium text-white backdrop-blur-md transition-colors hover:border-accent/70 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
-                  {reply.label}
+                  {label}
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -149,7 +155,7 @@ export function PoppiChat() {
       {showScrollToLatest && (
         <button
           type="button"
-          aria-label="Scroll to latest message"
+          aria-label={t("chat.scrollLatest")}
           onClick={scrollToLatest}
           className="chat-scroll-latest poppi-control absolute right-2 bottom-[4.6rem] z-10 grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-[#242424]/95 text-white shadow-lg backdrop-blur-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
@@ -176,7 +182,7 @@ export function PoppiChat() {
         }}
       >
         <label htmlFor="poppi-message" className="sr-only">
-          Message Poppi
+          {t("chat.messageLabel")}
         </label>
         <textarea
           id="poppi-message"
@@ -189,12 +195,12 @@ export function PoppiChat() {
               sendMessage(draft);
             }
           }}
-          placeholder="Ask Poppi anything..."
+          placeholder={t("chat.placeholder")}
           className="max-h-24 min-h-11 flex-1 resize-none bg-transparent py-3 text-sm text-white outline-none placeholder:text-white/55"
         />
         <button
           type="submit"
-          aria-label="Send message"
+          aria-label={t("chat.send")}
           disabled={!draft.trim()}
           className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-45"
         >

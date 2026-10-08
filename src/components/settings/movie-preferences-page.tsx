@@ -10,6 +10,9 @@ import { useSettings } from "@/components/providers/settings-provider";
 import { PreferenceGenrePicker } from "@/components/settings/preference-genre-picker";
 import { SettingsPageHeader } from "@/components/settings/settings-page-header";
 import { RecommendationStyleSlider } from "@/components/ui/recommendation-style-slider";
+import { useI18n } from "@/i18n/provider";
+import type { TranslationKey } from "@/i18n/types";
+import type { GenreId } from "@/types/metadata";
 import type {
   MoviePreferenceSettings,
   PreferredMovieLength,
@@ -19,12 +22,12 @@ import type {
 type OpenPicker = "liked" | "avoided" | null;
 
 const recommendationStyles: Array<{
-  label: string;
+  labelKey: TranslationKey;
   value: RecommendationStyle;
 }> = [
-  { label: "Familiar", value: "familiar" },
-  { label: "Balanced", value: "balanced" },
-  { label: "Adventurous", value: "adventurous" },
+  { labelKey: "preferences.style.familiar", value: "familiar" },
+  { labelKey: "preferences.style.balanced", value: "balanced" },
+  { labelKey: "preferences.style.adventurous", value: "adventurous" },
 ];
 
 const dividedPreferenceSectionClassName =
@@ -35,6 +38,11 @@ export function MoviePreferencesPage() {
   const { moviePreferences, saveMoviePreferences } = useSettings();
   const [draft, setDraft] = useState<MoviePreferenceSettings>(moviePreferences);
   const [openPicker, setOpenPicker] = useState<OpenPicker>(null);
+  const { t } = useI18n();
+  const localizedStyles = recommendationStyles.map((style) => ({
+    label: t(style.labelKey),
+    value: style.value,
+  }));
 
   useEffect(() => {
     // Restore persisted preferences once the provider has hydrated.
@@ -42,7 +50,7 @@ export function MoviePreferencesPage() {
     setDraft(moviePreferences);
   }, [moviePreferences]);
 
-  function toggleGenre(kind: Exclude<OpenPicker, null>, genre: string) {
+  function toggleGenre(kind: Exclude<OpenPicker, null>, genre: GenreId) {
     setDraft((current) => {
       const key = kind === "liked" ? "likedGenres" : "avoidedGenres";
       const otherKey = kind === "liked" ? "avoidedGenres" : "likedGenres";
@@ -67,33 +75,33 @@ export function MoviePreferencesPage() {
   return (
     <div className="flex flex-col gap-5 pb-5">
       <SettingsPageHeader
-        title="Movie preferences"
-        description="Help Poppi understand your taste."
+        title={t("settings.moviePreferences")}
+        description={t("preferences.description")}
       />
 
       <PreferenceGenreSection
-        title="Genres you like"
-        helper="Choose the genres you'd be happy to see more often."
+        title={t("preferences.likedGenres")}
+        helper={t("preferences.likedHelper")}
         genres={draft.likedGenres}
         onRemove={(genre) => toggleGenre("liked", genre)}
         onAdd={() => setOpenPicker("liked")}
       />
 
       <PreferenceGenreSection
-        title="Genres to avoid"
-        helper="Poppi will avoid recommending these whenever possible."
+        title={t("preferences.avoidedGenres")}
+        helper={t("preferences.avoidedHelper")}
         genres={draft.avoidedGenres}
         onRemove={(genre) => toggleGenre("avoided", genre)}
         onAdd={() => setOpenPicker("avoided")}
       />
 
       <section className={dividedPreferenceSectionClassName}>
-        <h2 className="text-sm font-semibold">Recommendation style</h2>
+        <h2 className="text-sm font-semibold">{t("preferences.recommendationStyle")}</h2>
         <p className="mt-1 text-xs leading-5 text-white/75">
-          Choose how adventurous you want your recommendations to be.
+          {t("preferences.styleHelper")}
         </p>
         <div className="mt-3 grid grid-cols-3 text-xs">
-          {recommendationStyles.map((style, index) => (
+          {localizedStyles.map((style, index) => (
             <span
               key={style.value}
               className={`${index === 1 ? "text-center" : index === 2 ? "text-right" : "text-left"} ${draft.recommendationStyle === style.value ? "font-semibold text-white" : "text-white/65"}`}
@@ -104,7 +112,7 @@ export function MoviePreferencesPage() {
         </div>
         <RecommendationStyleSlider
           className="mt-2 h-6"
-          options={recommendationStyles}
+          options={localizedStyles}
           value={draft.recommendationStyle}
           onChange={(recommendationStyle) =>
             setDraft((current) => ({ ...current, recommendationStyle }))
@@ -113,10 +121,9 @@ export function MoviePreferencesPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold">Preferred movie length</h2>
+        <h2 className="text-sm font-semibold">{t("preferences.preferredLength")}</h2>
         <p className="mt-1 text-xs leading-5 text-white/75">
-          We&apos;ll prioritize this duration in recommendations. You can always
-          ask Poppi for something different.
+          {t("preferences.lengthHelper")}
         </p>
         <div className="mt-3">
           <DurationOptionGroup
@@ -136,12 +143,12 @@ export function MoviePreferencesPage() {
         onClick={save}
         className="poppi-control ml-auto min-h-10 rounded-full bg-accent px-5 text-sm font-semibold"
       >
-        Save preferences
+        {t("preferences.save")}
       </button>
 
       {openPicker && (
         <PreferenceGenrePicker
-          title={openPicker === "liked" ? "Genres you like" : "Genres to avoid"}
+          title={openPicker === "liked" ? t("preferences.likedGenres") : t("preferences.avoidedGenres")}
           selectedGenres={
             openPicker === "liked" ? draft.likedGenres : draft.avoidedGenres
           }
@@ -156,8 +163,8 @@ export function MoviePreferencesPage() {
 type PreferenceGenreSectionProps = {
   title: string;
   helper: string;
-  genres: string[];
-  onRemove: (genre: string) => void;
+  genres: GenreId[];
+  onRemove: (genre: GenreId) => void;
   onAdd: () => void;
 };
 
@@ -168,6 +175,7 @@ function PreferenceGenreSection({
   onRemove,
   onAdd,
 }: PreferenceGenreSectionProps) {
+  const { formatGenre, t } = useI18n();
   return (
     <section className={dividedPreferenceSectionClassName}>
       <h2 className="text-sm font-semibold">{title}</h2>
@@ -179,11 +187,11 @@ function PreferenceGenreSection({
               key={genre}
               type="button"
               onClick={() => onRemove(genre)}
-              aria-label={`Remove ${genre}`}
+              aria-label={t("preferences.removeGenre", { genre: formatGenre(genre) })}
               className="poppi-control inline-flex min-h-8 items-center gap-2 rounded-full bg-accent px-4 text-sm"
             >
               <RemoveIcon />
-              {genre}
+              {formatGenre(genre)}
             </button>
           ))}
         </div>
@@ -194,7 +202,7 @@ function PreferenceGenreSection({
         className="poppi-control mt-3 inline-flex min-h-8 items-center gap-2 rounded-full border border-white/55 px-4 text-sm"
       >
         <PlusIcon />
-        Add genres
+        {t("preferences.addGenres")}
       </button>
     </section>
   );

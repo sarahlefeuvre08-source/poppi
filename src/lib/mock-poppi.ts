@@ -1,4 +1,7 @@
 import { getMovieById, movieCatalog } from "@/data/movies";
+import { translate } from "@/i18n/config";
+import { formatGenre, formatList } from "@/i18n/format";
+import type { Locale, TranslationKey } from "@/i18n/types";
 import type {
   ConversationStage,
   MockChatResponse,
@@ -6,6 +9,7 @@ import type {
   RecommendationContext,
 } from "@/types/chat";
 import type { Movie, RecommendationTag } from "@/types/movie";
+import type { GenreId } from "@/types/metadata";
 
 export const initialQuickReplies: QuickReply[] = [
   { label: "😂 Make me laugh", value: "make-me-laugh" },
@@ -23,16 +27,38 @@ const funnyQuickReplies: QuickReply[] = [
   { label: "🎲 Surprise me", value: "surprise" },
 ];
 
-const genreMatchers: Array<[string, RegExp]> = [
-  ["Animation", /\banimat(?:ed|ion)\b/],
-  ["Adventure", /\badventure\b/],
-  ["Comedy", /\bcomed(?:y|ies)\b/],
-  ["Drama", /\bdrama\b/],
-  ["Family", /\bfamily\b/],
-  ["Horror", /\bhorror\b/],
-  ["Mystery", /\bmystery\b/],
-  ["Romance", /\b(?:romance|romantic)\b/],
-  ["Thriller", /\bthrillers?\b/],
+const quickReplyKeys: Record<string, TranslationKey> = {
+  "make-me-laugh": "chat.quick.make-me-laugh",
+  comforting: "chat.quick.comforting",
+  "good-cry": "chat.quick.good-cry",
+  scary: "chat.quick.scary",
+  "pick-for-me": "chat.quick.pick-for-me",
+  surprise: "chat.quick.surprise",
+  comedy: "chat.quick.comedy",
+  "romantic-comedy": "chat.quick.romantic-comedy",
+  "something-light": "chat.quick.something-light",
+  "something-else": "chat.quick.something-else",
+  shorter: "chat.quick.shorter",
+  "under-2-hours": "chat.quick.under-2-hours",
+  "less-romantic": "chat.quick.less-romantic",
+  "already-seen": "chat.quick.already-seen",
+};
+
+export function getQuickReplyLabel(locale: Locale, reply: QuickReply) {
+  const key = quickReplyKeys[reply.value];
+  return key ? translate(locale, key) : reply.label;
+}
+
+const genreMatchers: Array<[GenreId, RegExp]> = [
+  ["animation", /\banimat(?:ed|ion)\b/],
+  ["adventure", /\badventure\b/],
+  ["comedy", /\bcomed(?:y|ies)\b/],
+  ["drama", /\bdrama\b/],
+  ["family", /\bfamily\b/],
+  ["horror", /\bhorror\b/],
+  ["mystery", /\bmystery\b/],
+  ["romance", /\b(?:romance|romantic)\b/],
+  ["thriller", /\bthrillers?\b/],
 ];
 
 const moodMatchers: Array<[RecommendationTag, RegExp]> = [
@@ -57,7 +83,7 @@ export const initialRecommendationContext: RecommendationContext = {
 type IsMovieWatched = (movieId: string) => boolean;
 
 type ParsedRequest = {
-  genres: string[];
+  genres: GenreId[];
   moods: RecommendationTag[];
   minRuntimeExclusive?: number;
   maxRuntimeExclusive?: number;
@@ -84,7 +110,7 @@ function parseRequest(message: string): ParsedRequest {
     .filter(([, matcher]) => matcher.test(message))
     .map(([mood]) => mood);
 
-  if (/\b(?:scary|scare|frightening)\b/.test(message)) genres.push("Horror");
+  if (/\b(?:scary|scare|frightening)\b/.test(message)) genres.push("horror");
   if (/\b(?:funny|laugh|humou?r)\b/.test(message)) moods.push("funny");
 
   let minRuntimeExclusive: number | undefined;
@@ -177,26 +203,29 @@ function recommendation(
   movie: Movie,
   context: RecommendationContext,
   isMovieWatched: IsMovieWatched,
+  locale: Locale,
 ): MockChatResponse {
   const matchedMoods = context.preferredMoods.filter((mood) =>
     movie.recommendationTags.includes(mood),
   );
   const reasons = [
-    ...context.requiredGenres.filter((genre) => movie.genres.includes(genre)),
-    ...matchedMoods,
+    ...context.requiredGenres
+      .filter((genre) => movie.genres.includes(genre))
+      .map((genre) => formatGenre(locale, genre)),
+    ...matchedMoods.map((mood) => translate(locale, `metadata.mood.${mood}`)),
   ];
 
   if (context.maxRuntimeExclusive !== undefined) {
-    reasons.push(`under ${formatRuntimeLimit(context.maxRuntimeExclusive)}`);
+    reasons.push(translate(locale, "chat.constraintUnder", { duration: formatRuntimeLimit(locale, context.maxRuntimeExclusive) }));
   }
   if (context.minRuntimeExclusive !== undefined) {
-    reasons.push(`longer than ${formatRuntimeLimit(context.minRuntimeExclusive)}`);
+    reasons.push(translate(locale, "chat.constraintLonger", { duration: formatRuntimeLimit(locale, context.minRuntimeExclusive) }));
   }
 
   const groundedReasons = unique(reasons);
   const text = groundedReasons.length
-    ? `${sentenceList(groundedReasons)} — ${movie.title} matches what you're in the mood for. 🍿`
-    : `${movie.title} is my pick for you tonight. 🍿`;
+    ? translate(locale, "chat.recommendation", { constraints: sentenceList(locale, groundedReasons), movie: movie.title })
+    : translate(locale, "chat.pick", { movie: movie.title });
 
   return {
     stage: "recommendation",
@@ -213,22 +242,23 @@ function recommendation(
   };
 }
 
-function formatRuntimeLimit(minutes: number) {
+function formatRuntimeLimit(locale: Locale, minutes: number) {
   if (minutes % 60 === 0) {
     const hours = minutes / 60;
-    return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+    return translate(locale, "chat.runtime.hour", { count: hours });
   }
-  return `${minutes} minutes`;
+  return translate(locale, "chat.runtime.minutes", { count: minutes });
 }
 
-function sentenceList(values: string[]) {
+function sentenceList(locale: Locale, values: string[], capitalize = true) {
   const formatted = values.map((value, index) => {
-    const normalized = value.toLocaleLowerCase();
-    return index === 0
-      ? `${normalized.charAt(0).toLocaleUpperCase()}${normalized.slice(1)}`
+    const normalized = value.toLocaleLowerCase(locale);
+    return index === 0 && capitalize
+      ? `${normalized.charAt(0).toLocaleUpperCase(locale)}${normalized.slice(1)}`
       : normalized;
   });
   if (formatted.length === 1) return formatted[0];
+  if (locale === "fr") return formatList(locale, formatted);
   if (formatted.length === 2) return `${formatted[0]} and ${formatted[1]}`;
   return `${formatted.slice(0, -1).join(", ")} and ${formatted.at(-1)}`;
 }
@@ -252,7 +282,7 @@ function isEligibleRecommendation(
   ) {
     return false;
   }
-  if (context.excludeRomance && movie.genres.includes("Romance")) return false;
+  if (context.excludeRomance && movie.genres.includes("romance")) return false;
   if (
     !context.requiredGenres.every((genre) => movie.genres.includes(genre))
   ) {
@@ -342,8 +372,8 @@ function buildFollowUpReplies(
     replies.push({ label: "⏲️ Under 2 hours", value: "under-2-hours" });
   }
   if (
-    currentMovie?.genres.includes("Romance") ||
-    context.requiredGenres.includes("Romance") ||
+    currentMovie?.genres.includes("romance") ||
+    context.requiredGenres.includes("romance") ||
     context.preferredMoods.includes("romantic")
   ) {
     replies.push({ label: "💔 Less romantic", value: "less-romantic" });
@@ -355,29 +385,29 @@ function buildFollowUpReplies(
   ];
 }
 
-function noMatch(context: RecommendationContext, detail?: string): MockChatResponse {
+function noMatch(context: RecommendationContext, locale: Locale, detail?: string): MockChatResponse {
   return {
     stage: "recommendation",
     text: detail
-      ? `I couldn't find a match for ${detail} in my current collection. Want me to loosen one of those preferences? 🍿`
-      : "I couldn't find an exact unwatched match in my current collection. Want me to loosen one of those preferences? 🍿",
+      ? translate(locale, "chat.noMatchDetail", { detail })
+      : translate(locale, "chat.noMatch"),
     quickReplies: [],
     recommendationContext: context,
   };
 }
 
-function describeConstraints(context: RecommendationContext) {
+function describeConstraints(context: RecommendationContext, locale: Locale) {
   const parts = [
-    ...context.requiredGenres,
-    ...context.preferredMoods,
+    ...context.requiredGenres.map((genre) => formatGenre(locale, genre)),
+    ...context.preferredMoods.map((mood) => translate(locale, `metadata.mood.${mood}`)),
     ...(context.maxRuntimeExclusive !== undefined
-      ? [`under ${formatRuntimeLimit(context.maxRuntimeExclusive)}`]
+      ? [translate(locale, "chat.constraintUnder", { duration: formatRuntimeLimit(locale, context.maxRuntimeExclusive) })]
       : []),
     ...(context.minRuntimeExclusive !== undefined
-      ? [`longer than ${formatRuntimeLimit(context.minRuntimeExclusive)}`]
+      ? [translate(locale, "chat.constraintLonger", { duration: formatRuntimeLimit(locale, context.minRuntimeExclusive) })]
       : []),
   ];
-  return parts.length > 0 ? `${sentenceList(unique(parts))} movie` : undefined;
+  return parts.length > 0 ? sentenceList(locale, unique(parts), false) : undefined;
 }
 
 function withCurrentMovieExcluded(context: RecommendationContext) {
@@ -392,17 +422,21 @@ function withCurrentMovieExcluded(context: RecommendationContext) {
 function selectRecommendation(
   context: RecommendationContext,
   isMovieWatched: IsMovieWatched,
+  locale: Locale,
 ) {
   const movie = findRecommendation(context, isMovieWatched);
   return movie
-    ? recommendation(movie, context, isMovieWatched)
-    : noMatch(context, describeConstraints(context));
+    ? recommendation(movie, context, isMovieWatched, locale)
+    : noMatch(context, locale, describeConstraints(context, locale)
+        ? translate(locale, "chat.movieConstraint", { constraints: describeConstraints(context, locale)! })
+        : undefined);
 }
 
 function refineRecommendation(
   intent: "something-else" | "less-romantic" | "already-seen",
   context: RecommendationContext,
   isMovieWatched: IsMovieWatched,
+  locale: Locale,
 ): MockChatResponse {
   const nextContext = withCurrentMovieExcluded({
     ...context,
@@ -410,7 +444,7 @@ function refineRecommendation(
       intent === "less-romantic" ? true : context.excludeRomance,
     requiredGenres:
       intent === "less-romantic"
-        ? context.requiredGenres.filter((genre) => genre !== "Romance")
+        ? context.requiredGenres.filter((genre) => genre !== "romance")
         : context.requiredGenres,
     preferredMoods:
       intent === "less-romantic"
@@ -420,12 +454,12 @@ function refineRecommendation(
 
   const movie = findRecommendation(nextContext, isMovieWatched);
   if (!movie) {
-    const detail = describeConstraints(nextContext)
-      ? `another ${describeConstraints(nextContext)}`
+    const detail = describeConstraints(nextContext, locale)
+      ? translate(locale, "chat.anotherConstraint", { constraints: describeConstraints(nextContext, locale)! })
       : undefined;
-    return noMatch(nextContext, detail);
+    return noMatch(nextContext, locale, detail);
   }
-  return recommendation(movie, nextContext, isMovieWatched);
+  return recommendation(movie, nextContext, isMovieWatched, locale);
 }
 
 export function getMockPoppiResponse(
@@ -433,23 +467,24 @@ export function getMockPoppiResponse(
   stage: ConversationStage,
   context: RecommendationContext,
   isMovieWatched: IsMovieWatched,
+  locale: Locale = "en",
 ): MockChatResponse {
   const message = normalize(input);
 
   if (/less romantic/.test(message) || message === "less-romantic") {
-    return refineRecommendation("less-romantic", context, isMovieWatched);
+    return refineRecommendation("less-romantic", context, isMovieWatched, locale);
   }
   if (/already seen|seen it/.test(message) || message === "already-seen") {
-    return refineRecommendation("already-seen", context, isMovieWatched);
+    return refineRecommendation("already-seen", context, isMovieWatched, locale);
   }
   if (/something else|another/.test(message) || message === "something-else") {
-    return refineRecommendation("something-else", context, isMovieWatched);
+    return refineRecommendation("something-else", context, isMovieWatched, locale);
   }
 
   if (message === "make-me-laugh") {
     return {
       stage: "funny",
-      text: "Nice! A funny movie for a cosy time together — under 2 hours. Do you have a preferred genre, or are you open to suggestions?",
+      text: translate(locale, "chat.clarifyFunny"),
       quickReplies: funnyQuickReplies,
       recommendationContext: {
         ...context,
@@ -542,8 +577,8 @@ export function getMockPoppiResponse(
       ...nextContext,
       requiredGenres: unique([
         ...nextContext.requiredGenres,
-        "Comedy",
-        "Romance",
+        "comedy",
+        "romance",
       ]),
       preferredMoods: unique([...nextContext.preferredMoods, "romantic"]),
     };
@@ -551,7 +586,7 @@ export function getMockPoppiResponse(
   if (message === "comedy") {
     nextContext = {
       ...nextContext,
-      requiredGenres: unique([...nextContext.requiredGenres, "Comedy"]),
+      requiredGenres: unique([...nextContext.requiredGenres, "comedy"]),
       preferredMoods: unique([...nextContext.preferredMoods, "funny"]),
     };
   }
@@ -586,7 +621,7 @@ export function getMockPoppiResponse(
   if (message === "scary") {
     nextContext = {
       ...nextContext,
-      requiredGenres: unique([...nextContext.requiredGenres, "Horror"]),
+      requiredGenres: unique([...nextContext.requiredGenres, "horror"]),
       preferredMoods: unique([...nextContext.preferredMoods, "scary"]),
     };
   }
@@ -604,12 +639,12 @@ export function getMockPoppiResponse(
   ].includes(message);
 
   if (parsed.hasRecommendationIntent || quickPick || stage === "funny") {
-    return selectRecommendation(nextContext, isMovieWatched);
+    return selectRecommendation(nextContext, isMovieWatched, locale);
   }
 
   return {
     stage: "funny",
-    text: "That sounds fun! Tell me a genre, mood or maximum runtime and I'll narrow it down.",
+    text: translate(locale, "chat.askForDetails"),
     quickReplies: funnyQuickReplies,
     recommendationContext: context,
   };

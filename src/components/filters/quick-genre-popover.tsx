@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 
 import { RemoveIcon } from "@/components/icons/remove-icon";
 import { genreOptions } from "@/data/filter-options";
+import { useI18n } from "@/i18n/provider";
+import type { GenreId } from "@/types/metadata";
 
 type QuickGenrePopoverProps = {
   anchorRef: RefObject<HTMLButtonElement | null>;
-  selectedGenres: string[];
-  onChange: (genres: string[]) => void;
+  selectedGenres: GenreId[];
+  onChange: (genres: GenreId[]) => void;
   onClose: () => void;
 };
 
@@ -26,6 +28,7 @@ export function QuickGenrePopover({
   onClose,
 }: QuickGenrePopoverProps) {
   const [position, setPosition] = useState<PopoverPosition | null>(null);
+  const { formatGenre, t } = useI18n();
 
   useEffect(() => {
     function updatePosition() {
@@ -59,7 +62,7 @@ export function QuickGenrePopover({
     };
   }, [anchorRef]);
 
-  function toggleGenre(genre: string) {
+  function toggleGenre(genre: GenreId) {
     onChange(
       selectedGenres.includes(genre)
         ? selectedGenres.filter((selectedGenre) => selectedGenre !== genre)
@@ -71,25 +74,25 @@ export function QuickGenrePopover({
     <div className="fixed inset-0 z-40">
       <button
         type="button"
-        aria-label="Close genre selector"
+        aria-label={t("filters.closeGenreSelector")}
         onClick={onClose}
         className="absolute inset-0 cursor-default bg-transparent"
       />
       {position && (
         <section
-          aria-label="Select genres"
+          aria-label={t("filters.selectGenres")}
           style={position}
           className="absolute max-h-[min(24rem,55dvh)] overflow-y-auto rounded-2xl border border-white/20 bg-[#252525]/98 p-3 shadow-[0_18px_55px_rgba(0,0,0,0.5)] backdrop-blur-xl"
         >
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold">Genres</h2>
+            <h2 className="text-sm font-semibold">{t("filters.genres")}</h2>
             {selectedGenres.length > 0 && (
               <button
                 type="button"
                 onClick={() => onChange([])}
                 className="text-xs text-white/80 underline underline-offset-2"
               >
-                Clear genres
+                {t("filters.clearGenres")}
               </button>
             )}
           </div>
@@ -107,7 +110,7 @@ export function QuickGenrePopover({
                   {isSelected && (
                     <RemoveIcon />
                   )}
-                  {genre}
+                  {formatGenre(genre)}
                 </button>
               );
             })}

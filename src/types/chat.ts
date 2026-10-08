@@ -15,7 +15,7 @@ export type ConversationStage = "welcome" | "funny" | "recommendation";
 export type RecommendationContext = {
   currentRecommendationId?: string;
   excludedMovieIds: string[];
-  requiredGenres: string[];
+  requiredGenres: GenreId[];
   preferredMoods: RecommendationTag[];
   excludeRomance: boolean;
   minRuntimeExclusive?: number;
@@ -29,4 +29,5 @@ export type MockChatResponse = {
   recommendationId?: string;
   recommendationContext: RecommendationContext;
 };
+import type { GenreId } from "@/types/metadata";
 import type { RecommendationTag } from "@/types/movie";

@@ -12,6 +12,7 @@ import { useMovieLibrary } from "@/components/providers/movie-library-provider";
 import { MovieSearchInput } from "@/components/search/movie-search-input";
 import type { MovieSource } from "@/lib/movie-navigation";
 import type { Movie } from "@/types/movie";
+import { useI18n } from "@/i18n/provider";
 import {
   emptyMovieFilters,
   filterMovies,
@@ -19,8 +20,6 @@ import {
 } from "@/types/movie-filters";
 
 type MovieCollectionPageProps = {
-  title: string;
-  description: string;
   movies: Movie[];
   collectionLabel: string;
   enableFavorites?: boolean;
@@ -30,8 +29,6 @@ type MovieCollectionPageProps = {
 };
 
 export function MovieCollectionPage({
-  title,
-  description,
   movies: initialMovies,
   collectionLabel,
   enableFavorites = false,
@@ -52,6 +49,13 @@ export function MovieCollectionPage({
   const [isGenrePopoverOpen, setIsGenrePopoverOpen] = useState(false);
   const genreButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useI18n();
+  const localizedTitle = watchlistOnly
+    ? t("collection.toWatchTitle")
+    : t("collection.watchedTitle");
+  const localizedDescription = watchlistOnly
+    ? t("collection.toWatchDescription")
+    : t("collection.watchedDescription");
 
   const collectionMovies = useMemo(
     () =>
@@ -92,27 +96,27 @@ export function MovieCollectionPage({
 
   return (
     <div className="flex flex-col gap-5 pb-5">
-      <MainPageHeader title={title} description={description} />
+      <MainPageHeader title={localizedTitle} description={localizedDescription} />
 
       <MovieSearchInput
         id={`${collectionLabel}-search`}
         inputRef={searchInputRef}
-        label={`Search ${collectionLabel.toLocaleLowerCase()} movies`}
-        clearLabel={`Clear ${collectionLabel.toLocaleLowerCase()} movie search`}
+        label={watchlistOnly ? t("collection.searchToWatch") : t("collection.searchWatched")}
+        clearLabel={watchlistOnly ? t("collection.clearToWatchSearch") : t("collection.clearWatchedSearch")}
         query={query}
         onQueryChange={setQuery}
         inputClassName="h-14 w-full rounded-[1.4rem] border border-white/20 bg-white/10 py-3 pr-14 pl-5 text-base text-white outline-none backdrop-blur-md placeholder:text-white/80 focus:border-accent/70"
       />
 
       <div
-        aria-label={`${collectionLabel} movie filters`}
-        className="-mx-4 flex items-center gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label={watchlistOnly ? t("collection.toWatchFiltersAria") : t("collection.watchedFiltersAria")}
+        className="-mx-4 flex items-center gap-3 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {enableFavorites && (
           <div className="flex shrink-0 items-center gap-1.5">
-            <span className="text-base font-semibold">Favorites</span>
+            <span className="text-base font-semibold">{t("common.favorites")}</span>
             <ToggleSwitch
-              ariaLabel="Show favorites only"
+              ariaLabel={t("collection.showFavorites")}
               checked={appliedFilters.favoritesOnly}
               onCheckedChange={(favoritesOnly) =>
                 setAppliedFilters((current) => ({
@@ -147,7 +151,7 @@ export function MovieCollectionPage({
               <path d="m4 6 4 4 4-4" />
             </svg>
           </span>
-          Genre
+          {t("common.genre")}
         </button>
         <button
           type="button"
@@ -165,13 +169,13 @@ export function MovieCollectionPage({
           >
             <path d="M4 7h16M7 12h10M10 17h4" />
           </svg>
-          Filters
+          {t("common.filters")}
         </button>
       </div>
 
       {visibleMovies.length > 0 ? (
         <section
-          aria-label={`${collectionLabel} movies`}
+          aria-label={watchlistOnly ? t("collection.toWatchMoviesAria") : t("collection.watchedMoviesAria")}
           className="grid grid-cols-2 gap-x-4 gap-y-6"
         >
           {visibleMovies.map((movie) => (
@@ -189,21 +193,21 @@ export function MovieCollectionPage({
           <div className="relative h-28 w-28">
             <Image
               src="/assets/poppi.png"
-              alt="Poppi"
+              alt={t("common.poppiAlt")}
               fill
               sizes="112px"
               className="object-contain"
             />
           </div>
           <p className="mt-5 text-lg font-semibold">
-            {isFilteredEmptyState ? "No movies found" : "Nothing here yet"}
+            {isFilteredEmptyState ? t("common.noMovies") : t("collection.nothingHere")}
           </p>
           <p className="mt-2 text-sm leading-5 text-text-secondary">
             {isFilteredEmptyState
-              ? "Try changing your search or filters."
+              ? t("collection.tryFilters")
               : watchlistOnly
-                ? "Save movies you want to watch and they'll appear here."
-                : "Movies you mark as watched will appear here."}
+                ? t("collection.emptyWatchlist")
+                : t("collection.emptyWatched")}
           </p>
         </section>
       )}

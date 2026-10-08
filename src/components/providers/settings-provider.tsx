@@ -9,14 +9,19 @@ import {
   useState,
 } from "react";
 
+import { normalizeGenreId } from "@/data/filter-options";
+import { defaultLocale, supportedLocales } from "@/i18n/config";
+import type { Locale } from "@/i18n/types";
 import type {
   MoviePreferenceSettings,
   ProfileSettings,
   RecommendationStyle,
   TasteProfile,
 } from "@/types/settings";
+import type { GenreId } from "@/types/metadata";
 
 type SettingsState = {
+  locale: Locale;
   profile: ProfileSettings;
   moviePreferences: MoviePreferenceSettings;
   onboardingCompleted: boolean;
@@ -25,10 +30,11 @@ type SettingsState = {
 
 type SettingsContextValue = SettingsState & {
   isHydrated: boolean;
+  saveLocale: (locale: Locale) => void;
   saveProfile: (profile: ProfileSettings) => void;
   saveMoviePreferences: (preferences: MoviePreferenceSettings) => void;
   completeOnboarding: (input: {
-    likedGenres: string[];
+    likedGenres: GenreId[];
     recommendationStyle: RecommendationStyle;
     favoriteMovieIds: string[];
   }) => void;
@@ -38,6 +44,7 @@ type SettingsContextValue = SettingsState & {
 const storageKey = "poppi-settings-v1";
 
 const defaultSettings: SettingsState = {
+  locale: defaultLocale,
   profile: { displayName: "Sarinha" },
   onboardingCompleted: false,
   tasteProfile: { favoriteMovieIds: [] },
@@ -49,20 +56,33 @@ const defaultSettings: SettingsState = {
   },
 };
 
-function uniqueGenres(genres: string[]) {
+function uniqueGenres(genres: GenreId[]) {
   return [...new Set(genres)];
 }
 
+function normalizeStoredGenres(genres: unknown): GenreId[] {
+  if (!Array.isArray(genres)) return [];
+  return uniqueGenres(
+    genres.flatMap((genre) => {
+      const normalized = normalizeGenreId(genre);
+      return normalized ? [normalized] : [];
+    }),
+  );
+}
+
 function normalizeMoviePreferences(
-  preferences: MoviePreferenceSettings,
+  preferences: Omit<MoviePreferenceSettings, "likedGenres" | "avoidedGenres"> & {
+    likedGenres: unknown;
+    avoidedGenres: unknown;
+  },
 ): MoviePreferenceSettings {
-  const likedGenres = uniqueGenres(preferences.likedGenres);
+  const likedGenres = normalizeStoredGenres(preferences.likedGenres);
   const likedGenreSet = new Set(likedGenres);
 
   return {
     ...preferences,
     likedGenres,
-    avoidedGenres: uniqueGenres(preferences.avoidedGenres).filter(
+    avoidedGenres: normalizeStoredGenres(preferences.avoidedGenres).filter(
       (genre) => !likedGenreSet.has(genre),
     ),
   };
@@ -95,6 +115,11 @@ function readStoredSettings(): SettingsState {
           : defaultSettings.moviePreferences.recommendationStyle;
 
     return {
+      locale:
+        typeof parsed.locale === "string" &&
+        supportedLocales.includes(parsed.locale as Locale)
+          ? (parsed.locale as Locale)
+          : defaultLocale,
       profile: { ...defaultSettings.profile, ...parsed.profile },
       onboardingCompleted: parsed.onboardingCompleted ?? false,
       tasteProfile: {
@@ -145,6 +170,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     () => ({
       ...settings,
       isHydrated,
+      saveLocale: (locale) => {
+        setSettings((current) => {
+          const next = { ...current, locale };
+          window.localStorage.setItem(storageKey, JSON.stringify(next));
+          return next;
+        });
+      },
       saveProfile: (profile) => {
         setSettings((current) => {
           const next = { ...current, profile };

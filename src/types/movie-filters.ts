@@ -1,13 +1,14 @@
 import type { Movie } from "@/types/movie";
+import type { CountryId, GenreId } from "@/types/metadata";
 
 export type DurationFilter = "any" | "under-90" | "under-120" | "120-plus";
 
 export type MovieFilters = {
   favoritesOnly: boolean;
-  genres: string[];
+  genres: GenreId[];
   fromYear: number | null;
   toYear: number | null;
-  country: string | null;
+  country: CountryId | null;
   duration: DurationFilter;
 };
 

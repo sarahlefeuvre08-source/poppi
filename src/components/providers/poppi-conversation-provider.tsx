@@ -16,6 +16,7 @@ import {
   initialRecommendationContext,
 } from "@/lib/mock-poppi";
 import { useMovieLibrary } from "@/components/providers/movie-library-provider";
+import { useI18n } from "@/i18n/provider";
 import type {
   ChatMessage,
   ConversationStage,
@@ -43,6 +44,7 @@ const PoppiConversationContext =
 
 export function PoppiConversationProvider({ children }: { children: ReactNode }) {
   const { isWatched } = useMovieLibrary();
+  const { locale } = useI18n();
   const [messages, setMessages] = useState<ChatMessage[]>([welcomeMessage]);
   const [quickReplies, setQuickReplies] =
     useState<QuickReply[]>(initialQuickReplies);
@@ -69,6 +71,7 @@ export function PoppiConversationProvider({ children }: { children: ReactNode })
           stage,
           recommendationContext,
           isWatched,
+          locale,
         );
         messageCounterRef.current += 1;
         const messageId = `message-${messageCounterRef.current}`;
@@ -89,7 +92,7 @@ export function PoppiConversationProvider({ children }: { children: ReactNode })
         setDraft("");
       },
     }),
-    [draft, isWatched, messages, quickReplies, recommendationContext, stage],
+    [draft, isWatched, locale, messages, quickReplies, recommendationContext, stage],
   );
 
   return (

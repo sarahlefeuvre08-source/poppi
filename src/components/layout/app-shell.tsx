@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AppExperience } from "@/components/layout/app-experience";
+import { I18nProvider } from "@/i18n/provider";
 import { MovieLibraryProvider } from "@/components/providers/movie-library-provider";
 import { MovieNavigationProvider } from "@/components/providers/movie-navigation-provider";
 import { MovieSearchProvider } from "@/components/providers/movie-search-provider";
@@ -14,15 +15,17 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   return (
     <SettingsProvider>
-      <MovieLibraryProvider>
-        <MovieNavigationProvider>
-          <MovieSearchProvider>
-            <PoppiConversationProvider>
-              <AppExperience>{children}</AppExperience>
-            </PoppiConversationProvider>
-          </MovieSearchProvider>
-        </MovieNavigationProvider>
-      </MovieLibraryProvider>
+      <I18nProvider>
+        <MovieLibraryProvider>
+          <MovieNavigationProvider>
+            <MovieSearchProvider>
+              <PoppiConversationProvider>
+                <AppExperience>{children}</AppExperience>
+              </PoppiConversationProvider>
+            </MovieSearchProvider>
+          </MovieNavigationProvider>
+        </MovieLibraryProvider>
+      </I18nProvider>
     </SettingsProvider>
   );
 }

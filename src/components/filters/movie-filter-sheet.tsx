@@ -9,7 +9,9 @@ import { PlusIcon } from "@/components/icons/plus-icon";
 import { RemoveIcon } from "@/components/icons/remove-icon";
 import { BottomSheet } from "@/components/overlays/bottom-sheet";
 import { countryOptions, genreOptions } from "@/data/filter-options";
+import { useI18n } from "@/i18n/provider";
 import type { Movie } from "@/types/movie";
+import type { CountryId, GenreId } from "@/types/metadata";
 import {
   emptyMovieFilters,
   filterMovies,
@@ -39,13 +41,14 @@ export function MovieFilterSheet({
 }: MovieFilterSheetProps) {
   const [draft, setDraft] = useState<MovieFilters>(appliedFilters);
   const [isGenrePickerOpen, setIsGenrePickerOpen] = useState(false);
+  const { formatCountry, formatGenre, t } = useI18n();
 
   const resultCount = useMemo(
     () => filterMovies(movies, draft).length,
     [draft, movies],
   );
 
-  function toggleGenre(genre: string) {
+  function toggleGenre(genre: GenreId) {
     setDraft((current) => ({
       ...current,
       genres: current.genres.includes(genre)
@@ -85,7 +88,7 @@ export function MovieFilterSheet({
   return (
     <BottomSheet
       ariaLabelledBy="filter-sheet-title"
-      closeLabel="Close filters"
+      closeLabel={t("filters.close")}
       onClose={onClose}
       className="flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[2rem] bg-[#252525] text-white shadow-[0_-20px_60px_rgba(0,0,0,0.45)] min-[361px]:max-h-[calc(100dvh-0.75rem)]"
     >
@@ -98,7 +101,7 @@ export function MovieFilterSheet({
               <button
                 type="button"
                 data-bottom-sheet-close
-                aria-label="Close filters"
+                aria-label={t("filters.close")}
                 className="secondary-control poppi-control grid h-10 w-10 place-items-center rounded-full border border-white/30 bg-white/5"
               >
                 <svg
@@ -115,7 +118,7 @@ export function MovieFilterSheet({
                 </svg>
               </button>
               <h2 id="filter-sheet-title" className="text-lg font-bold">
-                Filters
+                {t("common.filters")}
               </h2>
             </div>
             <button
@@ -123,7 +126,7 @@ export function MovieFilterSheet({
               onClick={() => setDraft(emptyMovieFilters)}
               className="secondary-text-link rounded-sm text-sm text-white/90 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Clear all
+              {t("filters.clearAll")}
             </button>
           </header>
 
@@ -132,11 +135,11 @@ export function MovieFilterSheet({
               {enableFavorites && (
                 <fieldset>
                   <legend className="mb-3 text-base font-semibold">
-                    Favorites
+                    {t("common.favorites")}
                   </legend>
                   <div className="flex w-fit items-center gap-1 text-sm">
                     <ToggleSwitch
-                      ariaLabel="Favorites only"
+                      ariaLabel={t("filters.favoritesOnly")}
                       checked={draft.favoritesOnly}
                       onCheckedChange={(favoritesOnly) =>
                         setDraft((current) => ({
@@ -145,13 +148,13 @@ export function MovieFilterSheet({
                         }))
                       }
                     />
-                    Favorites only
+                    {t("filters.favoritesOnly")}
                   </div>
                 </fieldset>
               )}
 
               <fieldset>
-                <legend className="mb-3 text-base font-semibold">Genre</legend>
+                <legend className="mb-3 text-base font-semibold">{t("common.genre")}</legend>
                 {draft.genres.length > 0 && (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {draft.genres.map((genre) => (
@@ -162,7 +165,7 @@ export function MovieFilterSheet({
                         className="poppi-control flex min-h-8 items-center gap-2 rounded-full bg-accent px-4 text-sm font-medium"
                       >
                         <RemoveIcon />
-                        {genre}
+                        {formatGenre(genre)}
                       </button>
                     ))}
                   </div>
@@ -174,7 +177,7 @@ export function MovieFilterSheet({
                   className="poppi-control flex min-h-8 items-center gap-2 rounded-full border border-white/55 px-4 text-sm"
                 >
                   <PlusIcon />
-                  Select genres
+                  {t("filters.selectGenres")}
                 </button>
                 {isGenrePickerOpen && (
                   <div className="mt-3 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/15 p-3">
@@ -188,7 +191,7 @@ export function MovieFilterSheet({
                           onClick={() => toggleGenre(genre)}
                           className={`poppi-control rounded-full border px-3 py-1.5 text-xs ${isSelected ? "border-accent bg-accent text-white" : "border-white/30 bg-transparent text-white"}`}
                         >
-                          {genre}
+                          {formatGenre(genre)}
                         </button>
                       );
                     })}
@@ -198,17 +201,17 @@ export function MovieFilterSheet({
 
               <fieldset>
                 <legend className="mb-3 text-base font-semibold">
-                  Release year
+                  {t("filters.releaseYear")}
                 </legend>
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 gap-3 min-[351px]:grid-cols-2 min-[390px]:gap-5">
                   <label className="text-sm">
-                    <span className="mb-1 block">From</span>
+                    <span className="mb-1 block">{t("filters.from")}</span>
                     <FilterSelect
                       value={draft.fromYear ?? "any"}
                       onChange={(event) => setFromYear(event.target.value)}
                     >
                       <option value="any" className="bg-[#252525]">
-                        Any
+                        {t("filters.any")}
                       </option>
                       {yearOptions.map((year) => (
                         <option key={year} value={year} className="bg-[#252525]">
@@ -218,13 +221,13 @@ export function MovieFilterSheet({
                     </FilterSelect>
                   </label>
                   <label className="text-sm">
-                    <span className="mb-1 block">To</span>
+                    <span className="mb-1 block">{t("filters.to")}</span>
                     <FilterSelect
                       value={draft.toYear ?? "any"}
                       onChange={(event) => setToYear(event.target.value)}
                     >
                       <option value="any" className="bg-[#252525]">
-                        Any
+                        {t("filters.any")}
                       </option>
                       {yearOptions.map((year) => (
                         <option key={year} value={year} className="bg-[#252525]">
@@ -237,7 +240,7 @@ export function MovieFilterSheet({
               </fieldset>
 
               <label className="block">
-                <span className="mb-3 block text-base font-semibold">Country</span>
+                <span className="mb-3 block text-base font-semibold">{t("filters.country")}</span>
                 <FilterSelect
                   value={draft.country ?? "any"}
                   onChange={(event) =>
@@ -246,13 +249,13 @@ export function MovieFilterSheet({
                       country:
                         event.target.value === "any"
                           ? null
-                          : event.target.value,
+                          : (event.target.value as CountryId),
                     }))
                   }
                   textSize="sm"
                 >
                   <option value="any" className="bg-[#252525]">
-                    Any country
+                    {t("filters.anyCountry")}
                   </option>
                   {countryOptions.map((country) => (
                     <option
@@ -260,14 +263,14 @@ export function MovieFilterSheet({
                       value={country}
                       className="bg-[#252525]"
                     >
-                      {country}
+                      {formatCountry(country)}
                     </option>
                   ))}
                 </FilterSelect>
               </label>
 
               <fieldset>
-                <legend className="mb-3 text-base font-semibold">Duration</legend>
+                <legend className="mb-3 text-base font-semibold">{t("filters.duration")}</legend>
                 <DurationOptionGroup
                   value={draft.duration}
                   onChange={(duration) =>
@@ -289,8 +292,8 @@ export function MovieFilterSheet({
               className="poppi-control min-h-12 w-full rounded-2xl bg-accent px-5 text-base font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               {resultCount === 0
-                ? "No movies found"
-                : `Show ${resultCount} ${resultCount === 1 ? "movie" : "movies"}`}
+                ? t("common.noMovies")
+                : t("filters.showMovies", { count: resultCount })}
             </button>
           </footer>
         </div>

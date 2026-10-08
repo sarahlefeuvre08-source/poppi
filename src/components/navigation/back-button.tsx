@@ -3,17 +3,20 @@
 import Link from "next/link";
 import type { MouseEventHandler } from "react";
 
+import { useI18n } from "@/i18n/provider";
+
 type BackButtonProps = {
   href: string;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
 };
 
 export function BackButton({ href, onClick }: BackButtonProps) {
+  const { t } = useI18n();
   return (
     <Link
       href={href}
       onClick={onClick}
-      aria-label="Go back"
+      aria-label={t("common.back")}
       className="secondary-control poppi-control grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-black/35 text-white backdrop-blur-md"
     >
       <svg

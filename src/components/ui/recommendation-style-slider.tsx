@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useI18n } from "@/i18n/provider";
 
 export type RecommendationStyleOption<T extends string> = {
   label: string;
@@ -29,6 +30,7 @@ export function RecommendationStyleSlider<T extends string>({
   const selectedIndex = options.findIndex((option) => option.value === value);
   const selected = options[selectedIndex];
   const style: SliderStyle = { "--slider-track-inset": trackOuterInset };
+  const { t } = useI18n();
 
   return (
     <div className={`recommendation-style-slider relative h-8 ${className}`} style={style}>
@@ -47,7 +49,7 @@ export function RecommendationStyleSlider<T extends string>({
         max={options.length - 1}
         step="1"
         value={selectedIndex}
-        aria-label="Recommendation style"
+        aria-label={t("preferences.recommendationStyle")}
         aria-valuetext={selected?.label}
         onChange={(event) => onChange(options[Number(event.target.value)].value)}
         className="poppi-range-discrete recommendation-style-slider__input"

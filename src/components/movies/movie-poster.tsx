@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useI18n } from "@/i18n/provider";
 
 type MoviePosterProps = {
   title: string;
@@ -17,13 +20,14 @@ export function MoviePoster({
   landscape = false,
   sizes,
 }: MoviePosterProps) {
+  const { t } = useI18n();
   return (
     <div
       className={`relative w-full overflow-hidden ${landscape ? "aspect-[4/3]" : compact ? "aspect-[3/4]" : "aspect-[1000/1482]"}`}
     >
       <Image
         src={src}
-        alt={`${title} poster`}
+        alt={t("movie.posterAlt", { title })}
         fill
         priority={priority}
         sizes={

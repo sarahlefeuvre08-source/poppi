@@ -5,11 +5,13 @@ import Image from "next/image";
 import { BookmarkIcon } from "@/components/icons/bookmark-icon";
 import { MovieDetailsLink } from "@/components/navigation/movie-details-link";
 import { useMovieLibrary } from "@/components/providers/movie-library-provider";
+import { useI18n } from "@/i18n/provider";
 import type { Movie } from "@/types/movie";
 
 export function ChatMovieRecommendation({ movie }: { movie: Movie }) {
   const { isInWatchlist, toggleWatchlist } = useMovieLibrary();
   const isSaved = isInWatchlist(movie.id);
+  const { formatGenre, formatMovieRuntime, t } = useI18n();
 
   return (
     <article className="mt-3 overflow-hidden rounded-[1.4rem] border border-white/12 bg-[#202020]/95 shadow-xl">
@@ -17,7 +19,7 @@ export function ChatMovieRecommendation({ movie }: { movie: Movie }) {
         <div className="relative aspect-[2/3] w-full self-start overflow-hidden rounded-xl bg-black/20 min-[360px]:aspect-[3/4]">
           <Image
             src={movie.posterSrc}
-            alt={`${movie.title} poster`}
+            alt={t("movie.posterAlt", { title: movie.title })}
             fill
             sizes="102px"
             className="object-contain min-[360px]:object-cover"
@@ -28,11 +30,11 @@ export function ChatMovieRecommendation({ movie }: { movie: Movie }) {
             {movie.title}
           </h3>
           <p className="mt-1.5 text-xs text-white/75 min-[360px]:mt-2 min-[360px]:text-sm">
-            {movie.runtime} <span className="px-1 text-white/40">|</span>{" "}
+            {formatMovieRuntime(movie.runtimeMinutes)} <span className="px-1 text-white/40">|</span>{" "}
             {movie.year}
           </p>
           <p className="mt-1 break-words text-xs text-white/75 min-[360px]:text-sm">
-            {movie.genres.join(", ")}
+            {movie.genres.map(formatGenre).join(", ")}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-semibold min-[360px]:mt-3 min-[360px]:gap-2">
             <span className="rounded-sm bg-[#f5c518] px-1 py-0.5 font-black tracking-[-0.06em] text-ink">
@@ -47,17 +49,17 @@ export function ChatMovieRecommendation({ movie }: { movie: Movie }) {
         <MovieDetailsLink
           movieId={movie.id}
           source="/poppi"
-          ariaLabel={`View details for ${movie.title}`}
+          ariaLabel={t("movie.viewDetails", { title: movie.title })}
           className="poppi-control flex min-h-11 flex-1 items-center justify-center rounded-full bg-accent px-4 text-sm font-semibold text-white focus-visible:outline-white"
         >
-          Movie details
+          {t("common.movieDetails")}
         </MovieDetailsLink>
         <button
           type="button"
           aria-label={
             isSaved
-              ? `Remove ${movie.title} from To watch`
-              : `Add ${movie.title} to To watch`
+              ? t("movie.removeWatchlistAria", { title: movie.title })
+              : t("movie.addWatchlistAria", { title: movie.title })
           }
           aria-pressed={isSaved}
           onClick={() => toggleWatchlist(movie.id)}

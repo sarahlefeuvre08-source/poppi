@@ -2,12 +2,14 @@
 
 import { type RefObject, useRef } from "react";
 
+import { useI18n } from "@/i18n/provider";
+
 type MovieSearchInputProps = {
   clearLabel?: string;
   id: string;
   inputClassName: string;
   inputRef?: RefObject<HTMLInputElement | null>;
-  label: string;
+  label?: string;
   onQueryChange: (query: string) => void;
   placeholder?: string;
   query: string;
@@ -15,23 +17,24 @@ type MovieSearchInputProps = {
 };
 
 export function MovieSearchInput({
-  clearLabel = "Clear search",
+  clearLabel,
   id,
   inputClassName,
   inputRef,
   label,
   onQueryChange,
-  placeholder = "Search for a movie",
+  placeholder,
   query,
   readOnly = false,
 }: MovieSearchInputProps) {
+  const { t } = useI18n();
   const localInputRef = useRef<HTMLInputElement>(null);
   const resolvedInputRef = inputRef ?? localInputRef;
 
   return (
     <div className="relative">
       <label htmlFor={id} className="sr-only">
-        {label}
+        {label ?? t("common.searchMovie")}
       </label>
       <input
         ref={resolvedInputRef}
@@ -43,13 +46,13 @@ export function MovieSearchInput({
         readOnly={readOnly}
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("common.searchMovie")}
         className={`appearance-none ${inputClassName}`}
       />
       {query ? (
         <button
           type="button"
-          aria-label={clearLabel}
+          aria-label={clearLabel ?? t("common.clearSearch")}
           onClick={() => {
             onQueryChange("");
             resolvedInputRef.current?.focus();

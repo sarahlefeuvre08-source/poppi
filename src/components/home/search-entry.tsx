@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/i18n/provider";
 
 export function SearchEntry() {
+  const { t } = useI18n();
   return (
     <Link
       href="/search"
-      aria-label="Search movies — find any movie in Poppi"
+      aria-label={t("home.searchLabel")}
       className="group flex min-h-20 items-center gap-3 rounded-[1.15rem] border border-white/25 bg-[#252525]/90 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur-md transition-colors hover:bg-[#2d2d2d]/95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <svg
@@ -21,10 +25,10 @@ export function SearchEntry() {
       </svg>
       <span className="min-w-0 flex-1">
         <span className="block text-base font-semibold text-white">
-          Search movies
+          {t("home.searchTitle")}
         </span>
         <span className="mt-0.5 block text-sm text-text-secondary">
-          Find any movie in Poppi
+          {t("home.searchDescription")}
         </span>
       </span>
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent text-white transition-transform group-hover:translate-x-0.5">

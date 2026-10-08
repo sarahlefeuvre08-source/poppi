@@ -7,12 +7,14 @@ import { type FormEvent, useEffect, useState } from "react";
 import { useSettings } from "@/components/providers/settings-provider";
 import { SettingsIcon } from "@/components/settings/settings-icon";
 import { SettingsPageHeader } from "@/components/settings/settings-page-header";
+import { useI18n } from "@/i18n/provider";
 
 export function EditProfilePage() {
   const router = useRouter();
   const { profile, saveProfile } = useSettings();
   const [displayName, setDisplayName] = useState(profile.displayName);
   const [avatarNotice, setAvatarNotice] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     // Keep the form aligned when persisted settings finish hydrating.
@@ -31,8 +33,8 @@ export function EditProfilePage() {
   return (
     <div className="flex flex-col gap-5 pb-5">
       <SettingsPageHeader
-        title="Edit profile"
-        description="Manage your personal information."
+        title={t("settings.editProfile")}
+        description={t("settings.profileDescription")}
       />
 
       <div className="flex flex-col items-center">
@@ -49,7 +51,7 @@ export function EditProfilePage() {
           </div>
           <button
             type="button"
-            aria-label="Edit avatar"
+            aria-label={t("settings.editAvatar")}
             onClick={() => setAvatarNotice(true)}
             className="poppi-control absolute right-0 bottom-0 grid h-10 w-10 place-items-center rounded-full border-2 border-[#171717] bg-accent text-black"
           >
@@ -58,14 +60,14 @@ export function EditProfilePage() {
         </div>
         {avatarNotice && (
           <p role="status" className="mt-3 text-center text-xs text-white/70">
-            Avatar editing is not connected in this prototype.
+            {t("settings.avatarNotice")}
           </p>
         )}
       </div>
 
       <form onSubmit={handleSubmit} className="mt-1 flex flex-col items-end gap-4">
         <label className="w-full rounded-[1.35rem] border border-white/35 bg-[#292929]/90 px-3 py-2 backdrop-blur-md focus-within:border-accent">
-          <span className="block text-xs text-white/70">Display name</span>
+          <span className="block text-xs text-white/70">{t("settings.displayName")}</span>
           <input
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
@@ -79,7 +81,7 @@ export function EditProfilePage() {
           disabled={!displayName.trim()}
           className="poppi-control min-h-10 rounded-full bg-accent px-5 text-sm font-semibold text-white disabled:opacity-45"
         >
-          Save changes
+          {t("settings.saveChanges")}
         </button>
       </form>
     </div>

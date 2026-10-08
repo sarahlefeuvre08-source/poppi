@@ -14,8 +14,8 @@ export type ProfileSettings = {
 };
 
 export type MoviePreferenceSettings = {
-  likedGenres: string[];
-  avoidedGenres: string[];
+  likedGenres: GenreId[];
+  avoidedGenres: GenreId[];
   recommendationStyle: RecommendationStyle;
   preferredMovieLength: PreferredMovieLength;
 };
@@ -23,3 +23,4 @@ export type MoviePreferenceSettings = {
 export type TasteProfile = {
   favoriteMovieIds: string[];
 };
+import type { GenreId } from "@/types/metadata";

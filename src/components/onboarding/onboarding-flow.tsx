@@ -9,34 +9,37 @@ import { MovieSearchInput } from "@/components/search/movie-search-input";
 import { RecommendationStyleSlider } from "@/components/ui/recommendation-style-slider";
 import { genreOptions } from "@/data/filter-options";
 import { movieCatalog } from "@/data/movies";
+import { useI18n } from "@/i18n/provider";
+import type { TranslationKey } from "@/i18n/types";
 import type { RecommendationStyle } from "@/types/settings";
+import type { GenreId } from "@/types/metadata";
 
 type Step = "welcome" | "genres" | "movies" | "style" | "reward";
 
 const steps: Step[] = ["welcome", "genres", "movies", "style", "reward"];
 const styles: Array<{
   value: RecommendationStyle;
-  label: string;
+  labelKey: TranslationKey;
   symbol: string;
-  description: string;
+  descriptionKey: TranslationKey;
 }> = [
   {
     value: "familiar",
-    label: "Familiar",
+    labelKey: "preferences.style.familiar",
     symbol: "🏠",
-    description: "Recommend movies similar to what I already enjoy.",
+    descriptionKey: "preferences.style.familiarDescription",
   },
   {
     value: "balanced",
-    label: "Balanced",
+    labelKey: "preferences.style.balanced",
     symbol: "⚖️",
-    description: "Mostly my favorites, with some discoveries.",
+    descriptionKey: "preferences.style.balancedDescription",
   },
   {
     value: "adventurous",
-    label: "Adventurous",
+    labelKey: "preferences.style.adventurous",
     symbol: "🎲",
-    description: "Take me outside my comfort zone.",
+    descriptionKey: "preferences.style.adventurousDescription",
   },
 ];
 
@@ -128,11 +131,12 @@ function StepFrame({
 }
 
 function OnboardingBackButton({ onClick }: { onClick: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Go back"
+      aria-label={t("common.back")}
       className="secondary-control poppi-control mb-5 grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md"
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -143,14 +147,15 @@ function OnboardingBackButton({ onClick }: { onClick: () => void }) {
 }
 
 function WelcomeStep({ onNext }: { onNext: () => void }) {
+  const { t } = useI18n();
   return (
-    <StepFrame action={onNext} actionLabel="GET STARTED">
+    <StepFrame action={onNext} actionLabel={t("onboarding.getStarted")}>
       <div className="flex flex-1 flex-col items-center justify-center pb-20 text-center">
         <div className="relative h-[clamp(11rem,52vw,13rem)] w-[clamp(11rem,52vw,13rem)]">
-          <Image src="/assets/poppi.png" alt="Poppi mascot" fill priority sizes="208px" className="scale-[1.45] object-contain" />
+          <Image src="/assets/poppi.png" alt={t("common.poppiMascotAlt")} fill priority sizes="208px" className="scale-[1.45] object-contain" />
         </div>
         <h1 className="font-gloock mt-2 text-6xl leading-none font-normal tracking-[-0.06em]">Poppi</h1>
-        <p className="mt-4 text-xl">Pick less. Watch more.</p>
+        <p className="mt-4 text-xl">{t("onboarding.tagline")}</p>
       </div>
     </StepFrame>
   );
@@ -162,12 +167,13 @@ function GenresStep({
   onBack,
   onNext,
 }: {
-  selected: string[];
-  onChange: (genres: string[]) => void;
+  selected: GenreId[];
+  onChange: (genres: GenreId[]) => void;
   onBack: () => void;
   onNext: () => void;
 }) {
-  const toggle = (genre: string) =>
+  const { formatGenre, t } = useI18n();
+  const toggle = (genre: GenreId) =>
     onChange(
       selected.includes(genre)
         ? selected.filter((item) => item !== genre)
@@ -175,9 +181,9 @@ function GenresStep({
     );
 
   return (
-    <StepFrame onBack={onBack} action={onNext} actionLabel="NEXT">
-      <h1 className="text-2xl leading-tight font-bold tracking-[-0.035em]">What are your favorite genres?</h1>
-      <p className="mt-1 text-sm text-white/85">You can pick as many genres as you like.</p>
+    <StepFrame onBack={onBack} action={onNext} actionLabel={t("onboarding.next")}>
+      <h1 className="text-2xl leading-tight font-bold tracking-[-0.035em]">{t("onboarding.favoriteGenres")}</h1>
+      <p className="mt-1 text-sm text-white/85">{t("onboarding.genreHelper")}</p>
       <div className="mt-24 grid grid-cols-3 gap-x-3 gap-y-3 max-[350px]:grid-cols-2">
         {genreOptions.map((genre) => {
           const active = selected.includes(genre);
@@ -187,9 +193,9 @@ function GenresStep({
               type="button"
               aria-pressed={active}
               onClick={() => toggle(genre)}
-              className={`poppi-control min-h-8 rounded-full border px-2 text-sm ${active ? "border-accent bg-accent font-semibold" : "border-white/65 bg-black/15"}`}
+              className={`poppi-control min-h-8 rounded-full border px-2 text-sm font-normal ${active ? "border-accent bg-accent" : "border-white/65 bg-black/15"}`}
             >
-              {genre}
+              {formatGenre(genre)}
             </button>
           );
         })}
@@ -213,6 +219,7 @@ function MoviesStep({
   onBack: () => void;
   onNext: () => void;
 }) {
+  const { formatMovieRuntime, t } = useI18n();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const confirmationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const confirmationPendingRef = useRef(false);
@@ -258,15 +265,16 @@ function MoviesStep({
   }
 
   return (
-    <StepFrame onBack={onBack} action={onNext} actionLabel="NEXT" actionDisabled={selectedIds.length !== 5}>
-      <h1 className="text-2xl leading-tight font-bold tracking-[-0.035em]">Pick 5 of your favorite movies</h1>
-      <p className="mt-3 text-center text-sm"><span className="rounded-full border border-white/60 bg-black/25 px-2 py-0.5">{selectedIds.length}/5</span></p>
+    <StepFrame onBack={onBack} action={onNext} actionLabel={t("onboarding.next")} actionDisabled={selectedIds.length !== 5}>
+      <h1 className="text-2xl leading-tight font-bold tracking-[-0.035em]">{t("onboarding.favoriteMovies")}</h1>
+      <p className="mt-3 text-center text-sm"><span className="rounded-full border border-white/60 bg-black/25 px-2 py-0.5">{t("onboarding.selectedCount", { count: selectedIds.length })}</span></p>
       <div className="mt-4">
         <MovieSearchInput
           id="onboarding-movie-search"
           inputRef={searchInputRef}
-          label="Search for a movie"
-          clearLabel="Clear favorite movie search"
+          label={t("common.searchMovies")}
+          placeholder={t("common.searchMovies")}
+          clearLabel={t("onboarding.clearMovieSearch")}
           query={query}
           readOnly={confirmationPending}
           onQueryChange={onQueryChange}
@@ -282,7 +290,7 @@ function MoviesStep({
               <article key={movie.id} className="min-w-0">
                 <button
                   type="button"
-                  aria-label={`${selected ? "Deselect" : "Select"} ${movie.title}`}
+                  aria-label={t(selected ? "onboarding.deselectMovie" : "onboarding.selectMovie", { title: movie.title })}
                   aria-pressed={selected}
                   disabled={confirmationPending || (!selected && selectedIds.length === 5)}
                   onClick={() => toggleMovie(movie.id)}
@@ -294,13 +302,13 @@ function MoviesStep({
                   </span>
                 </button>
                 <h2 className="mt-2 line-clamp-2 text-sm font-semibold">{movie.title}</h2>
-                <p className="mt-1 text-sm text-white/80">{movie.runtime} | {movie.year}</p>
+                <p className="mt-1 text-sm text-white/80">{formatMovieRuntime(movie.runtimeMinutes)} | {movie.year}</p>
               </article>
             );
           })}
         </div>
       ) : (
-        <p className="mt-12 text-center text-sm text-white/75">No movies found.</p>
+        <p className="mt-12 text-center text-sm text-white/75">{t("common.noMovies")}</p>
       )}
     </StepFrame>
   );
@@ -317,25 +325,32 @@ function StyleStep({
   onBack: () => void;
   onNext: () => void;
 }) {
+  const { t } = useI18n();
+  const localizedStyles = styles.map((style) => ({
+    value: style.value,
+    label: t(style.labelKey),
+    symbol: style.symbol,
+    description: t(style.descriptionKey),
+  }));
   const selectedIndex = styles.findIndex((style) => style.value === value);
-  const selected = styles[selectedIndex];
+  const selected = localizedStyles[selectedIndex];
 
   return (
-    <StepFrame onBack={onBack} action={onNext} actionLabel="NEXT">
-      <h1 className="text-2xl leading-tight font-bold tracking-[-0.035em]">How adventurous should Poppi&apos;s recommendations be?</h1>
+    <StepFrame onBack={onBack} action={onNext} actionLabel={t("onboarding.next")}>
+      <h1 className="text-2xl leading-tight font-bold tracking-[-0.035em]">{t("onboarding.styleQuestion")}</h1>
       <div className="mt-24 text-center">
         <div className="text-6xl leading-none" aria-hidden="true">{selected.symbol}</div>
         <h2 className="mt-5 text-2xl font-bold">{selected.label}</h2>
-        <p className="mt-2 text-sm text-white/85">{selected.description}</p>
+        <p className="mt-2 min-h-10 text-sm leading-5 text-white/85">{selected.description}</p>
         <RecommendationStyleSlider
           className="mt-4"
-          options={styles}
+          options={localizedStyles}
           value={value}
           onChange={onChange}
           trackOuterInset="calc(16.6667% - (var(--slider-thumb-size) / 2))"
         />
         <div className="grid grid-cols-3 text-[0.65rem] text-white/70">
-          {styles.map((style) => <span key={style.value} className="text-center">{style.label}</span>)}
+          {localizedStyles.map((style) => <span key={style.value} className="text-center">{style.label}</span>)}
         </div>
       </div>
     </StepFrame>
@@ -347,31 +362,29 @@ function RewardStep({
   onBack,
   onFinish,
 }: {
-  genres: string[];
+  genres: GenreId[];
   onBack: () => void;
   onFinish: () => void;
 }) {
+  const { t } = useI18n();
   return (
-    <StepFrame onBack={onBack} action={onFinish} actionLabel="CONTINUE">
+    <StepFrame onBack={onBack} action={onFinish} actionLabel={t("onboarding.continue")}>
       <div className="flex flex-1 flex-col items-center justify-center pb-12 text-center">
         <div className="relative h-[clamp(11.5rem,54vw,13.5rem)] w-[clamp(11.5rem,54vw,13.5rem)]">
-          <Image src="/assets/poppi.png" alt="Poppi mascot" fill sizes="216px" className="scale-[1.4] object-contain" />
+          <Image src="/assets/poppi.png" alt={t("common.poppiMascotAlt")} fill sizes="216px" className="scale-[1.4] object-contain" />
         </div>
-        <h1 className="mt-5 text-3xl font-bold tracking-[-0.04em]">🎬 Looking good!</h1>
-        <p className="mt-4 max-w-sm text-lg leading-6">{genreSummary(genres)}</p>
+        <h1 className="mt-5 text-3xl font-bold tracking-[-0.04em]">{t("onboarding.lookingGood")}</h1>
+        <p className="mt-4 max-w-sm text-lg leading-6"><LocalizedGenreSummary genres={genres} /></p>
       </div>
     </StepFrame>
   );
 }
 
-function genreSummary(genres: string[]) {
+function LocalizedGenreSummary({ genres }: { genres: GenreId[] }) {
+  const { formatOnboardingGenreSummary, t } = useI18n();
   if (genres.length === 0) {
-    return "Ready to explore? Poppi has plenty of recommendations waiting for you.";
+    return t("onboarding.ready");
   }
-  const shown = genres.slice(0, 3);
-  const list =
-    shown.length === 1
-      ? shown[0]
-      : `${shown.slice(0, -1).join(", ")} and ${shown.at(-1)}`;
-  return `${list} fan? Poppi has plenty of recommendations waiting for you.`;
+  const list = formatOnboardingGenreSummary(genres.slice(0, 3));
+  return t("onboarding.genreSummary", { genres: list });
 }

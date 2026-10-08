@@ -6,7 +6,8 @@ export type NavIconName =
   | "settings";
 
 export type NavigationItem = {
-  label: string;
+  labelKey: TranslationKey;
   href: string;
   icon: NavIconName;
 };
+import type { TranslationKey } from "@/i18n/types";

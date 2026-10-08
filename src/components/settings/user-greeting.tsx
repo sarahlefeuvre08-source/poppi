@@ -3,9 +3,11 @@
 import Image from "next/image";
 
 import { useSettings } from "@/components/providers/settings-provider";
+import { useI18n } from "@/i18n/provider";
 
 export function UserGreeting() {
   const { profile } = useSettings();
+  const { t } = useI18n();
 
   return (
     <header className="flex items-center gap-3">
@@ -20,7 +22,7 @@ export function UserGreeting() {
         />
       </div>
       <h1 className="text-[1.4rem] font-bold tracking-[-0.03em]">
-        Hi, {profile.displayName}!
+        {t("home.greeting", { name: profile.displayName })}
       </h1>
     </header>
   );

@@ -1,17 +1,21 @@
+"use client";
+
 import Image from "next/image";
 
 import { SettingsPageHeader } from "@/components/settings/settings-page-header";
+import { useI18n } from "@/i18n/provider";
 
 export function AboutPoppiPage() {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-6 pb-5">
-      <SettingsPageHeader title="About Poppi" />
+      <SettingsPageHeader title={t("about.title")} />
 
       <section className="text-center">
         <div className="relative mx-auto h-28 w-28">
           <Image
             src="/assets/poppi.png"
-            alt="Poppi mascot"
+            alt={t("common.poppiMascotAlt")}
             fill
             priority
             sizes="112px"
@@ -19,27 +23,26 @@ export function AboutPoppiPage() {
           />
         </div>
         <h2 className="mt-3 text-lg font-bold tracking-[-0.025em]">
-          Poppi: your movie buddy
+          {t("about.tagline")}
         </h2>
         <p className="mt-3 text-sm leading-5 text-white/90">
-          Not sure what to watch? Poppi helps you discover movies that match
-          your tastes, your mood and the moment.
+          {t("about.description")}
         </p>
       </section>
 
-      <AboutSection title="APP INFORMATION">
-        <DefinitionItem term="Version">1.0.0</DefinitionItem>
-        <DefinitionItem term="Made by">Sarah Lefeuvre</DefinitionItem>
-        <DefinitionItem term="Movie data">
-          Local prototype movie catalog
+      <AboutSection title={t("about.appInformation")}>
+        <DefinitionItem term={t("about.version")}>1.0.0</DefinitionItem>
+        <DefinitionItem term={t("about.madeBy")}>Sarah Lefeuvre</DefinitionItem>
+        <DefinitionItem term={t("about.movieData")}>
+          {t("about.localCatalog")}
         </DefinitionItem>
       </AboutSection>
 
-      <AboutSection title="CREDITS" bordered>
-        <DefinitionItem term="Design & Development">
+      <AboutSection title={t("about.credits")} bordered>
+        <DefinitionItem term={t("about.designDevelopment")}>
           Sarah Lefeuvre
         </DefinitionItem>
-        <DefinitionItem term="Poppi mascot">Designed by Sarah</DefinitionItem>
+        <DefinitionItem term={t("about.mascot")}>{t("about.designedBy")}</DefinitionItem>
       </AboutSection>
     </div>
   );
@@ -78,4 +81,3 @@ function DefinitionItem({
     </div>
   );
 }
-

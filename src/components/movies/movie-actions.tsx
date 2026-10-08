@@ -2,6 +2,7 @@
 
 import { BookmarkIcon } from "@/components/icons/bookmark-icon";
 import { useMovieLibrary } from "@/components/providers/movie-library-provider";
+import { useI18n } from "@/i18n/provider";
 
 type MovieActionsProps = {
   animateStateChange?: boolean;
@@ -18,13 +19,14 @@ export function MovieActions({
     useMovieLibrary();
   const watched = isWatched(movieId);
   const inWatchlist = isInWatchlist(movieId);
+  const { t } = useI18n();
 
   return (
     <div className="flex items-center gap-2.5">
       <button
         type="button"
         aria-pressed={watched}
-        aria-label={watched ? `Remove ${title} from watched` : `Mark ${title} as watched`}
+        aria-label={watched ? t("movie.removeWatchedAria", { title }) : t("movie.markWatchedAria", { title })}
         onClick={() => toggleWatched(movieId)}
         className={`poppi-control flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold ${animateStateChange ? "watched-toggle" : ""} ${watched ? "border-accent bg-accent text-white" : "border-white bg-white text-ink"}`}
       >
@@ -62,15 +64,15 @@ export function MovieActions({
           key={watched ? "watched-label" : "unwatched-label"}
           className={animateStateChange ? "watched-toggle__content" : ""}
         >
-          {watched ? "Watched" : "Mark as watched"}
+          {watched ? t("movie.watched") : t("movie.markWatched")}
         </span>
       </button>
       <button
         type="button"
         aria-label={
           inWatchlist
-            ? `Remove ${title} from watchlist`
-            : `Add ${title} to watchlist`
+            ? t("movie.removeWatchlistAria", { title })
+            : t("movie.addWatchlistAria", { title })
         }
         aria-pressed={inWatchlist}
         onClick={() => toggleWatchlist(movieId)}

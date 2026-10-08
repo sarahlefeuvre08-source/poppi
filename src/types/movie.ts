@@ -21,8 +21,8 @@ export type Movie = {
   runtime: string;
   runtimeMinutes: number;
   director: string;
-  countries: string[];
-  genres: string[];
+  countries: CountryId[];
+  genres: GenreId[];
   recommendationTags: RecommendationTag[];
   imdbRating: number;
   posterSrc: string;
@@ -32,3 +32,4 @@ export type Movie = {
   favorite?: boolean;
   inWatchlist?: boolean;
 };
+import type { CountryId, GenreId } from "@/types/metadata";

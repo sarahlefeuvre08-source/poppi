@@ -1,7 +1,10 @@
+"use client";
+
 import { MoviePoster } from "@/components/movies/movie-poster";
 import { MovieDetailsLink } from "@/components/navigation/movie-details-link";
 import type { MovieSource } from "@/lib/movie-navigation";
 import type { Movie } from "@/types/movie";
+import { useI18n } from "@/i18n/provider";
 
 type MovieCollectionCardProps = {
   movie: Movie;
@@ -16,13 +19,14 @@ export function MovieCollectionCard({
   onToggleFavorite,
   source,
 }: MovieCollectionCardProps) {
+  const { formatMovieRuntime, t } = useI18n();
   return (
     <article className="min-w-0">
       <div className="relative">
         <MovieDetailsLink
           movieId={movie.id}
           source={source}
-          ariaLabel={`View details for ${movie.title}`}
+          ariaLabel={t("movie.viewDetails", { title: movie.title })}
           className="poppi-card-control block w-full overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_12px_32px_rgba(0,0,0,0.3)]"
         >
           <MoviePoster
@@ -37,8 +41,8 @@ export function MovieCollectionCard({
             type="button"
             aria-label={
               movie.favorite
-                ? `Remove ${movie.title} from favorites`
-                : `Add ${movie.title} to favorites`
+                ? t("movie.removeFavoriteAria", { title: movie.title })
+                : t("movie.addFavoriteAria", { title: movie.title })
             }
             aria-pressed={movie.favorite}
             onClick={() => onToggleFavorite?.(movie.id)}
@@ -64,7 +68,7 @@ export function MovieCollectionCard({
         {movie.title}
       </h2>
       <p className="mt-1 text-sm text-text-secondary">
-        {movie.runtime} <span className="px-0.5 text-white/45">|</span>{" "}
+        {formatMovieRuntime(movie.runtimeMinutes)} <span className="px-0.5 text-white/45">|</span>{" "}
         {movie.year}
       </p>
     </article>

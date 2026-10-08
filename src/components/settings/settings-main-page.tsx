@@ -7,23 +7,25 @@ import { useState } from "react";
 import { MainPageHeader } from "@/components/layout/main-page-header";
 import { useSettings } from "@/components/providers/settings-provider";
 import { SettingsRow } from "@/components/settings/settings-row";
+import { useI18n } from "@/i18n/provider";
 
 export function SettingsMainPage() {
-  const { profile } = useSettings();
+  const { profile, locale } = useSettings();
+  const { t } = useI18n();
   const [notice, setNotice] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-5 pb-5">
       <MainPageHeader
-        title="Settings"
-        description="Manage your preferences."
+        title={t("settings.title")}
+        description={t("settings.description")}
       />
 
       <section className="text-center">
         <Link
           href="/settings/edit-profile"
-          aria-label="Edit profile"
+          aria-label={t("settings.editProfile")}
           className="mx-auto flex w-fit min-w-32 flex-col items-center rounded-2xl bg-transparent px-3 py-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
           <span className="relative h-24 w-24 overflow-hidden rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.4)]">
@@ -40,7 +42,7 @@ export function SettingsMainPage() {
             {profile.displayName}
           </span>
           <span className="mt-1 text-sm font-semibold text-accent-on-dark">
-            Edit profile
+            {t("settings.editProfile")}
           </span>
         </Link>
       </section>
@@ -48,42 +50,47 @@ export function SettingsMainPage() {
       <div className="space-y-5">
         <section aria-labelledby="preferences-heading">
           <h2 id="preferences-heading" className="mb-2 text-sm font-bold tracking-[0.06em] text-white/65">
-            PREFERENCES
+            {t("settings.preferences")}
           </h2>
           <SettingsRow
             icon="heart"
-            title="Movie preferences"
-            subtitle="Genre, duration, and recommendations"
+            title={t("settings.moviePreferences")}
+            subtitle={t("settings.moviePreferencesSubtitle")}
             href="/settings/movie-preferences"
           />
         </section>
 
         <section aria-labelledby="app-heading">
           <h2 id="app-heading" className="mb-2 text-sm font-bold tracking-[0.06em] text-white/65">
-            APP
+            {t("settings.app")}
           </h2>
-          <SettingsRow icon="globe" title="Language" subtitle="English" />
+          <SettingsRow
+            icon="globe"
+            title={t("settings.language")}
+            subtitle={locale === "fr" ? t("settings.french") : t("settings.english")}
+            href="/settings/language"
+          />
         </section>
 
         <section aria-labelledby="about-heading">
           <h2 id="about-heading" className="mb-2 text-sm font-bold tracking-[0.06em] text-white/65">
-            ABOUT
+            {t("settings.about")}
           </h2>
           <div className="space-y-2.5">
             <SettingsRow
               icon="info"
-              title="About Poppi"
-              subtitle="Learn more about your movie buddy"
+              title={t("settings.aboutPoppi")}
+              subtitle={t("settings.aboutSubtitle")}
               href="/settings/about"
             />
             <SettingsRow
               icon="lock"
-              title="Privacy"
+              title={t("settings.privacy")}
               href="/settings/privacy"
             />
             <SettingsRow
               icon="document"
-              title="Terms"
+              title={t("settings.terms")}
               href="/settings/terms"
             />
           </div>
@@ -95,19 +102,19 @@ export function SettingsMainPage() {
           type="button"
           onClick={() =>
             setNotice(
-              "Log out is unavailable in this prototype because no account session is connected.",
+              t("settings.logoutNotice"),
             )
           }
           className="min-h-12 w-full rounded-xl border border-accent/70 bg-accent/10 px-5 text-sm font-semibold text-accent-on-dark transition-colors hover:bg-accent/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          Log out
+          {t("settings.logOut")}
         </button>
         <button
           type="button"
           onClick={() => setIsDeleteDialogOpen(true)}
           className="min-h-10 px-4 text-base text-accent-on-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          Delete account
+          {t("settings.deleteAccount")}
         </button>
         {notice && (
           <p role="status" className="mx-auto max-w-xs text-xs leading-5 text-white/75">
@@ -120,7 +127,7 @@ export function SettingsMainPage() {
         <div className="fixed inset-0 z-50 grid place-items-center px-6">
           <button
             type="button"
-            aria-label="Close delete account dialog"
+            aria-label={t("settings.closeDeleteDialog")}
             onClick={() => setIsDeleteDialogOpen(false)}
             className="absolute inset-0 bg-black/75"
           />
@@ -131,18 +138,17 @@ export function SettingsMainPage() {
             className="relative z-10 w-full max-w-sm rounded-3xl border border-white/15 bg-[#252525] p-5 shadow-2xl"
           >
             <h2 id="delete-account-title" className="text-lg font-bold">
-              Delete account?
+              {t("settings.deleteTitle")}
             </h2>
             <p className="mt-2 text-sm leading-6 text-white/75">
-              Account deletion is not connected in this prototype. No account
-              or data will be deleted.
+              {t("settings.deleteNotice")}
             </p>
             <button
               type="button"
               onClick={() => setIsDeleteDialogOpen(false)}
               className="mt-5 min-h-11 w-full rounded-xl bg-accent px-4 text-sm font-bold"
             >
-              Keep account
+              {t("settings.keepAccount")}
             </button>
           </section>
         </div>

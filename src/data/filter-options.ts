@@ -1,43 +1,61 @@
+import { formatCountry, formatGenre } from "@/i18n/format";
+import type { CountryId, GenreId } from "@/types/metadata";
+
 export const genreOptions = [
-  "Action",
-  "Adventure",
-  "Animation",
-  "Comedy",
-  "Crime",
-  "Documentary",
-  "Drama",
-  "Family",
-  "Fantasy",
-  "History",
-  "Horror",
-  "Music",
-  "Mystery",
-  "Romance",
-  "Sci-Fi",
-  "Thriller",
-  "War",
-  "Western",
-] as const;
+  "action",
+  "adventure",
+  "animation",
+  "comedy",
+  "crime",
+  "documentary",
+  "drama",
+  "family",
+  "fantasy",
+  "history",
+  "horror",
+  "music",
+  "mystery",
+  "romance",
+  "sci-fi",
+  "thriller",
+  "war",
+  "western",
+] as const satisfies readonly GenreId[];
 
 export const countryOptions = [
-  "Argentina",
-  "Australia",
-  "Brazil",
-  "Canada",
-  "China",
-  "Denmark",
-  "France",
-  "Germany",
-  "India",
-  "Ireland",
-  "Italy",
-  "Japan",
-  "Mexico",
-  "New Zealand",
-  "Norway",
-  "South Korea",
-  "Spain",
-  "Sweden",
-  "UK",
-  "USA",
-] as const;
+  "AR",
+  "AU",
+  "BR",
+  "CA",
+  "CN",
+  "DK",
+  "FR",
+  "DE",
+  "IN",
+  "IE",
+  "IT",
+  "JP",
+  "MX",
+  "NZ",
+  "NO",
+  "KR",
+  "ES",
+  "SE",
+  "GB",
+  "US",
+] as const satisfies readonly CountryId[];
+
+const genreAliases = new Map<string, GenreId>([
+  ...genreOptions.map((genre) => [genre, genre] as const),
+  ["biography", "biography"],
+  ["sci fi", "sci-fi"],
+  ["science fiction", "sci-fi"],
+]);
+
+export function normalizeGenreId(value: unknown): GenreId | undefined {
+  if (typeof value !== "string") return undefined;
+  return genreAliases.get(value.trim().toLocaleLowerCase().replaceAll("_", " "));
+}
+
+export const getGenreLabel = (genre: GenreId) => formatGenre("en", genre);
+export const getCountryLabel = (country: CountryId) => formatCountry("en", country);
