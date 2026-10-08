@@ -17,25 +17,23 @@ export function LanguagePage() {
         title={t("settings.language")}
         description={t("settings.languageDescription")}
       />
-      <fieldset className="space-y-2.5">
-        <legend className="sr-only">{t("settings.language")}</legend>
+      <div role="group" aria-label={t("settings.language")} className="space-y-2.5">
         {options.map((option) => (
-          <label
+          <button
             key={option.value}
-            className="poppi-control flex min-h-14 cursor-pointer items-center justify-between rounded-xl border border-white/25 bg-[#292929]/90 px-4 text-sm font-semibold backdrop-blur-md"
+            type="button"
+            aria-pressed={locale === option.value}
+            onClick={() => setLocale(option.value)}
+            className="poppi-control grid min-h-14 w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-xl border border-white/25 bg-[#292929]/90 px-4 text-left text-sm font-semibold backdrop-blur-md"
           >
             {option.label}
-            <input
-              type="radio"
-              name="language"
-              value={option.value}
-              checked={locale === option.value}
-              onChange={() => setLocale(option.value)}
-              className="h-5 w-5 shrink-0 appearance-none rounded-full border border-white bg-transparent checked:bg-accent"
+            <span
+              aria-hidden="true"
+              className={`h-5 w-5 shrink-0 rounded-full border border-white ${locale === option.value ? "bg-accent" : "bg-transparent"}`}
             />
-          </label>
+          </button>
         ))}
-      </fieldset>
+      </div>
     </div>
   );
 }
