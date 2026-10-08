@@ -90,7 +90,7 @@ export function QuickGenrePopover({
               <button
                 type="button"
                 onClick={() => onChange([])}
-                className="text-xs text-white/80 underline underline-offset-2"
+                className="secondary-text-action rounded-sm text-xs"
               >
                 {t("filters.clearGenres")}
               </button>

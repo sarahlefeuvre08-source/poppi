@@ -122,16 +122,35 @@ a {
   transition: color 150ms ease-out;
 }
 
-.secondary-text-link {
-  transition: color 150ms ease-out;
+.secondary-text-action {
+  position: relative;
+  color: rgb(255 255 255 / 90%);
+  text-decoration-line: none;
+  text-underline-offset: 0.2em;
+  transition: color 150ms ease-out, opacity 150ms ease-out;
+}
+
+.secondary-text-action::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 2.75rem);
+  height: max(100%, 2.75rem);
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+.secondary-text-action:focus-visible {
+  text-decoration-line: underline;
 }
 
 .group:active .today-movie-title {
   color: rgba(255, 255, 255, 0.72);
 }
 
-.secondary-text-link:active {
+.secondary-text-action:active {
   color: rgba(255, 255, 255, 0.68);
+  opacity: 0.86;
 }
 
 .chat-scroll-latest:active,
@@ -161,8 +180,9 @@ a {
     color: var(--color-text-secondary);
   }
 
-  .secondary-text-link:hover {
+  .secondary-text-action:hover {
     color: var(--color-text-secondary);
+    text-decoration-line: underline;
   }
 
   .chat-scroll-latest:hover {

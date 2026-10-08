@@ -35,7 +35,7 @@ export function MovieDetailsPageContent({ movie, source }: { movie: Movie; sourc
         <section aria-labelledby="actors-heading">
           <div className="mb-3 flex items-center justify-between gap-4">
             <h2 id="actors-heading" className="text-lg font-bold">{t("movie.actors")}</h2>
-            <Link href={getMovieCastHref(movie.id, source)} className="secondary-text-link shrink-0 rounded-sm text-xs font-medium text-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+            <Link href={getMovieCastHref(movie.id, source)} className="secondary-text-action shrink-0 rounded-sm text-xs font-medium">
               <span aria-hidden="true">→</span> {t("movie.seeAll")}
             </Link>
           </div>

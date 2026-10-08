@@ -31,7 +31,7 @@ export function PreferenceGenrePicker({
         <div data-bottom-sheet-drag-region className="mx-auto mt-2 h-1 w-28 shrink-0 touch-none rounded-full bg-white/65" />
         <div data-bottom-sheet-drag-region className="flex shrink-0 touch-none items-center justify-between gap-4 px-4 pt-3 pb-1">
           <h2 id="preference-genre-title" className="text-lg font-bold">{title}</h2>
-          <button type="button" data-bottom-sheet-close className="poppi-control -mr-2 inline-flex min-h-11 min-w-11 items-center justify-center px-2 text-sm font-semibold text-accent-on-dark">
+          <button type="button" data-bottom-sheet-close className="secondary-text-action -mr-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm px-2 text-sm font-semibold">
             {t("preferences.done")}
           </button>
         </div>

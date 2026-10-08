@@ -31,7 +31,7 @@ export function LanguagePage() {
               value={option.value}
               checked={locale === option.value}
               onChange={() => setLocale(option.value)}
-              className="h-5 w-5 accent-accent"
+              className="h-5 w-5 shrink-0 appearance-none rounded-full border border-white bg-transparent checked:bg-accent"
             />
           </label>
         ))}

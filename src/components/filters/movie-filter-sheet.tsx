@@ -124,7 +124,7 @@ export function MovieFilterSheet({
             <button
               type="button"
               onClick={() => setDraft(emptyMovieFilters)}
-              className="secondary-text-link rounded-sm text-sm text-white/90 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="secondary-text-action rounded-sm text-sm"
             >
               {t("filters.clearAll")}
             </button>
